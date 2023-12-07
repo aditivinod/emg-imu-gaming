@@ -1,5 +1,6 @@
-# pip install keyboard
+# pip install keyboard``
 import keyboard
+import time
 
 def movement_press(mov):
     """
@@ -16,6 +17,7 @@ def movement_press(mov):
     match mov:
         case 0:
             keyboard.press("w")
+            print("Press")
         case 1:
             keyboard.press("a")
         case 2:
@@ -27,21 +29,18 @@ def movement_press(mov):
         
 def movement_release():
     """
-    Releases any movement keys currently being 'pressed.' 
+    Releases any movement keys currently being 'pressed.' #
 
     Movement keys are defined as "w," "a,", "s," and "d." 
     """
     movement_keys = ["w", "a", "s", "d"]
     keyboard.release(movement_keys)
+    print("Release")
 
-
-def keyboard_presser_tester():
-
-
-
-
-
-
-
-
-
+while True:
+    movement_press(0)
+    time.sleep(0.5)
+    movement_release()
+    if keyboard.read_key() == "x":
+        print("Exiting")
+        break
