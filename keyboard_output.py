@@ -1,6 +1,10 @@
 # pip install keyboard``
-import keyboard
+#import keyboard
+w
 import time
+
+from pynput.keyboard import Controller
+keyboard = Controller()
 
 def movement_press(mov):
     """
@@ -34,7 +38,8 @@ def movement_release():
     Movement keys are defined as "w," "a,", "s," and "d." 
     """
     movement_keys = ["w", "a", "s", "d"]
-    keyboard.release(movement_keys)
+    for key in movement_keys:
+       keyboard.release(key)
     print("Release")
 
 while True:
