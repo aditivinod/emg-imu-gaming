@@ -4,13 +4,12 @@ Authors: Aditi Vinod & Ian Walsh
 A model that takes in EMG and IMU inputs from armband-collected data and can turn those into keyboard inputs for a video game (ex: Minecraft).
 
 # Dependencies
-- MATLAB 2023a or later
-- Statistics & Machine Learning Toolbox
-- Deep Learning Toolbox
-- Signal Processing Toolbox
+- pylsl - `pip install pylsl`
+- numpy - `pip install numpy`
+- pynput - `pip install pynput`
 
 # Available Scripts
-None available at this time
+`dual.py` - Main script for running live classification from 2 streams. 
 
 # Helper Scripts
-None available at this time
+`keyboard_output.py` - Controller for the keyboard & mouse.
