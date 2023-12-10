@@ -82,37 +82,37 @@ if __name__=='__main__':
             except:
                 print('Please enter a valid int listed')
 
-    stream_name2 = None
-    while not stream_name2:
-        streams2 = resolve_stream()
-        for i2, stream2 in enumerate(streams2):
-            print(f"\033[1m{i2}: {stream2.name()}\033[0m")
-        inp2 = input('Which stream is your IMU wristband? (r) to reload list of available/ (q) to quit')
-        if inp2 == 'r': 
-            print('Reloading')
-            continue
-        elif inp2 == 'q':
-            sys.exit(0)
-        else:
-            try:
-                stream_name2 = streams2[int(inp2)].name()
-                if stream_name2 == 'marker_send':
-                    print('Please choose a different stream')
-                    stream_name2 = None
-                    continue
-                clear()
-            except:
-                print('Please enter a valid int listed')
+    # stream_name2 = None
+    # while not stream_name2:
+    #     streams2 = resolve_stream()
+    #     for i2, stream2 in enumerate(streams2):
+    #         print(f"\033[1m{i2}: {stream2.name()}\033[0m")
+    #     inp2 = input('Which stream is your IMU wristband? (r) to reload list of available/ (q) to quit')
+    #     if inp2 == 'r': 
+    #         print('Reloading')
+    #         continue
+    #     elif inp2 == 'q':
+    #         sys.exit(0)
+    #     else:
+    #         try:
+    #             stream_name2 = streams2[int(inp2)].name()
+    #             if stream_name2 == 'marker_send':
+    #                 print('Please choose a different stream')
+    #                 stream_name2 = None
+    #                 continue
+    #             clear()
+    #         except:
+    #             print('Please enter a valid int listed')
 
     # Launch listener for the EMG wristband stream
     wrapper = PyLSLWrapper(stream_name)
     wrapper.launch_stream_listener()
-    clear()
+    # clear()
 
     # Launch listener for the IMU wristband stream
-    wrapper2 = PyLSLWrapper(stream_name2)
-    wrapper2.launch_stream_listener()
-    clear()
+    # wrapper2 = PyLSLWrapper(stream_name2)
+    # wrapper2.launch_stream_listener()
+    # clear()
 
 
     # inferred_markers = StreamInfo(f'inferred {stream_name}', 'markers', 1, 0)
@@ -140,9 +140,9 @@ if __name__=='__main__':
         # elif inp == 'q':
         #     exit_program()
         #     sys.exit(0)
-        marker[0] = 1
+        marker = 1
 
-        if marker[0] == 1:
+        if marker == 1:
             tstamp = time.time()
             # print('3\r')
             # time.sleep(1)
@@ -150,12 +150,24 @@ if __name__=='__main__':
             # time.sleep(1)
             # print('1\r')
             # time.sleep(.5)
-            tstamp_start = wrapper.get_curr_timestamp()
-            time.sleep(.05)
+            # tstamp_start = wrapper.get_curr_timestamp()
+            time.sleep(.1)
             # print('Shoot!')
             # time.sleep(2)
-            data = wrapper.get_data_from(tstamp_start)
-            print(data)
+            data = wrapper.get_data_from(10)
+            # print(data);
+            # print(str(data[-1][1]) + ", " + str(data[-1][2]) + ", " + str(data[-1][3]))
+
+            if(data[-1][1] > 7):
+                print("a");
+            if(data[-1][1] < -7):
+                print("d");
+            if(data[-1][2] > 4):
+                print("s");
+            if(data[-1][2] < -4):
+                print("w");
+            # print()
+            # print(data[-1][3])
             # inference = runModel(data)
             # inferred_out.push_sample([inference])
             # print(f'Inference: {inference}')
