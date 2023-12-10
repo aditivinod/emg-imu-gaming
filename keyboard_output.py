@@ -1,7 +1,6 @@
-# pip install keyboard``
-#import keyboard
 import time
 
+# pip install pynput
 from pynput.keyboard import Key, Listener, Controller as KeyController
 from pynput.mouse import Button, Controller as MouseController
 keyboard = KeyController()
@@ -74,6 +73,39 @@ def mouse_release():
     mouse.release(Button.left)
     mouse.release(Button.right)
 
+def mouse_move(dir):
+    """
+    Moves the mouse by a constant amount (amt) in a given direction.
+    
+    Note: For this to work, user must have Options > Controls > Mouse Settings 
+    > Raw Input: OFF
+
+    Args:
+        dir: An integer representing the direction of mouse movement.
+    """
+    amt = 50
+    match dir: 
+        case 0:
+            print('up')
+            mouse.move(0, -amt)
+        case 1:
+            mouse.move(-amt, 0)
+        case 2: 
+            print('down')
+            mouse.move(0, amt)
+        case 3: 
+            mouse.move(amt, 0)
+
+def mouse_reset():
+    """
+    Resets the cursor to the center of the screen, assuming a 1920x1080 pixel
+    screen.
+    """
+    height = 1080
+    width = 1920
+    print('Current mouse position −> {0}'.format(mouse.position))
+    mouse.position = (width/2, height/2)
+
 def on_press(key):
     """
     A function that handles actions on key presses.
@@ -104,9 +136,11 @@ def try_keyboard_output():
     """
     with Listener(on_press=on_press, on_release=on_release) as listener:
         while not exit_flag:
-            mouse_press(0)
+            # mouse_press(0)
+            mouse_move(0)
             time.sleep(0.5)
-            mouse_release()
+            mouse_reset()
+            # mouse_release()
 
 try_keyboard_output()   
 
