@@ -1,13 +1,12 @@
 # pip install keyboard``
 #import keyboard
-w
 import time
 
 from pynput.keyboard import Controller
 keyboard = Controller()
 
 def movement_press(mov):
-    """
+    """w
     Given an output indicating the direction of movement from the IMU model,
     outputs the corresponding key to move in that direction.
 
