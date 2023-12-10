@@ -1,6 +1,5 @@
 from pylsl import resolve_stream, StreamInfo, StreamOutlet, StreamInlet
 from get_lsl_data import PyLSLWrapper, get_all_streams
-from pynput import keyboard
 import random
 import sys
 import threading
@@ -9,6 +8,10 @@ import time
 import numpy as np
 import atexit
 import argparse
+from pynput.keyboard import Key, Controller
+import keyboard_output
+
+keyboard = Controller()
 
 """
 Helper functions, don't worry about these!
@@ -25,47 +28,34 @@ def exit_program():
 
 atexit.register(exit_program)
 
+def wfl(input_channel):
+    prev = 0
+    wfl_out = 0
+    for x in input_channel:
+        wfl_out += x - prev
+        prev = x
+    return int(wfl_out / 1000)
+
 """
 Main function to run the program
 """
 if __name__=='__main__':
-    print("here");
-    # Figure out if we are using matlab engine or python engine
-    # parser = argparse.ArgumentParser(
-    #     prog='testDataPython',
-    #     description='Run the data testing ')
-    # parser.add_argument('--matlabmodel', help='Location of the runModel.m file')
-    # parser.add_argument('--pythonmodel', help='Location of the runModel.py file')
-    # parser.add_argument('--online', action='store_true', help="Whether to run for head to head battle")
-    # args = parser.parse_args()
-    # assert args.matlabmodel or args.pythonmodel, 'Please specify a model to run'
-    # if args.matlabmodel:
-        # try:
-        #     import matlab.engine
-        # except ImportError:
-        #     print('Matlab engine not found. If using MATLAB, please install matlab engine for python')
-        # eng = matlab.engine.start_matlab()
-        # # if we have a matlab engine and want to use a matlab model, import it
-        # pth = os.path.dirname(args.matlabmodel)
-        # eng.addpath(pth)
-        # runModel = lambda data: eng.runMatlabModel(data)
-    # else:
-    #     print('no matlab')
-    #     dir_path = os.path.dirname(args.pythonmodel)
-    #     sys.path.append(dir_path)
-    #     from runPythonModel import RunPythonModel 
-    #     pml = RunPythonModel(args.pythonmodel)
-    #     runModel = lambda data: pml.get_rps(data)
-
-    recv = None
+    #Load matlab model
+    # eng = matlab.engine.start_matlab()
+    # if we have a matlab engine and want to use a matlab model, import it
+    # pth = os.path.dirname("./runMatlabModel.m")
+    # eng.addpath(pth)
+    # runModel = lambda data: eng.runMatlabModel(data)
     clear()
-    # Find the wristband stream
+
+
+    # Find the IMU stream
     stream_name = None
     while not stream_name:
         streams = resolve_stream()
         for i, stream in enumerate(streams):
             print(f"\033[1m{i}: {stream.name()}\033[0m")
-        inp = input('Which stream is your EMG wristband? (r) to reload list of available/ (q) to quit')
+        inp = input('Which stream is your IMU wristband? (r) to reload list of available/ (q) to quit')
         if inp == 'r': 
             print('Reloading')
             continue
@@ -82,94 +72,83 @@ if __name__=='__main__':
             except:
                 print('Please enter a valid int listed')
 
-    # stream_name2 = None
-    # while not stream_name2:
-    #     streams2 = resolve_stream()
-    #     for i2, stream2 in enumerate(streams2):
-    #         print(f"\033[1m{i2}: {stream2.name()}\033[0m")
-    #     inp2 = input('Which stream is your IMU wristband? (r) to reload list of available/ (q) to quit')
-    #     if inp2 == 'r': 
-    #         print('Reloading')
-    #         continue
-    #     elif inp2 == 'q':
-    #         sys.exit(0)
-    #     else:
-    #         try:
-    #             stream_name2 = streams2[int(inp2)].name()
-    #             if stream_name2 == 'marker_send':
-    #                 print('Please choose a different stream')
-    #                 stream_name2 = None
-    #                 continue
-    #             clear()
-    #         except:
-    #             print('Please enter a valid int listed')
-
-    # Launch listener for the EMG wristband stream
-    wrapper = PyLSLWrapper(stream_name)
-    wrapper.launch_stream_listener()
-    # clear()
+    #Find the EMG stream
+    stream_name2 = None
+    while not stream_name2:
+        streams2 = resolve_stream()
+        for i2, stream2 in enumerate(streams2):
+            print(f"\033[1m{i2}: {stream2.name()}\033[0m")
+        inp2 = input('Which stream is your EMG wristband? (r) to reload list of available/ (q) to quit')
+        if inp2 == 'r': 
+            print('Reloading')
+            continue
+        elif inp2 == 'q':
+            sys.exit(0)
+        else:
+            try:
+                stream_name2 = streams2[int(inp2)].name()
+                if stream_name2 == 'marker_send':
+                    print('Please choose a different stream')
+                    stream_name2 = None
+                    continue
+                clear()
+            except:
+                print('Please enter a valid int listed')
 
     # Launch listener for the IMU wristband stream
-    # wrapper2 = PyLSLWrapper(stream_name2)
-    # wrapper2.launch_stream_listener()
-    # clear()
+    imuData = PyLSLWrapper(stream_name)
+    imuData.launch_stream_listener()
 
+    emgData = PyLSLWrapper(stream_name2)
+    emgData.launch_stream_listener()
 
-    # inferred_markers = StreamInfo(f'inferred {stream_name}', 'markers', 1, 0)
-    # inferred_out = StreamOutlet(inferred_markers)
-    # # Watch for the marker stream and create the inference stream 
-    # if args.online:
-    #     _ = input("Press enter when the marker thread has been launched")
-    #     marker_streams = resolve_stream()
-    #     for stream in marker_streams:
-    #         if stream.name() == 'marker_send':
-    #             recv = StreamInlet(stream)
-    #             print('Found marker stream')
-    #     if not recv:
-    #         print('No marker stream found. Make sure there is a computer with a marker stream running')
-    #         sys.exit(0)
-    #     clear() 
-
+    clear()
+    #wait for data to populate
+    time.sleep(1)
+    hold = 0
     while True:
-        # if args.online:
-        #     marker, timestamp = recv.pull_sample()
-        # else:
-        # inp = input('Press enter to record for inference, q+enter to quit!')
-        # if inp == '':
-        #     marker = [1]
-        # elif inp == 'q':
-        #     exit_program()
-        #     sys.exit(0)
-        marker = 1
+        imu_Data = imuData.get_data_from(imuData.get_curr_timestamp()- 0.5)
+        emg_Data = emgData.get_data_from(emgData.get_curr_timestamp() - 0.1)
 
-        if marker == 1:
-            tstamp = time.time()
-            # print('3\r')
-            # time.sleep(1)
-            # print('2\r')
-            # time.sleep(1)
-            # print('1\r')
-            # time.sleep(.5)
-            # tstamp_start = wrapper.get_curr_timestamp()
-            time.sleep(.1)
-            # print('Shoot!')
-            # time.sleep(2)
-            data = wrapper.get_data_from(10)
-            # print(data);
-            # print(str(data[-1][1]) + ", " + str(data[-1][2]) + ", " + str(data[-1][3]))
+        
+        # print(emgData.get_curr_timestamp())
+        # fft1 = np.fft.rfft(emg_Data[:,1])
+        # fft2 = np.fft.rfft(emg_Data[:,2])
+        # fft3 = np.fft.rfft(emg_Data[:,3])
+        # fft4 = np.fft.rfft(emg_Data[:,4])
+        # punch = int(np.sum(np.abs(fft4)) / 100000000) + int(np.sum(np.abs(fft2)) / 100000000) + int(np.sum(np.abs(fft3)) / 100000000) + int(np.sum(np.abs(fft4)) / 100000000)
+        # punch = int(np.sum(np.abs(fft4)) / 100000000)
+        print(wfl(emg_Data[:,1]))
+        # print(punch)
+        punch = wfl(emg_Data[:,1])
+        if(punch > 8341):
+            keyboard_output.mouse_press(0)
+        else:
+            keyboard_output.mouse_release()
 
-            if(data[-1][1] > 7):
-                print("a");
-            if(data[-1][1] < -7):
-                print("d");
-            if(data[-1][2] > 4):
-                print("s");
-            if(data[-1][2] < -4):
-                print("w");
-            # print()
-            # print(data[-1][3])
-            # inference = runModel(data)
-            # inferred_out.push_sample([inference])
-            # print(f'Inference: {inference}')
-        elif marker==99:
-            sys.exit(0)
+        #keyboard inputswww
+        if(imu_Data[-1][1] > 4):
+            keyboard_output.movement_press(1)
+        else:
+            keyboard.release('a')
+
+        if(imu_Data[-1][1] < -7):
+            keyboard_output.movement_press(3)
+        else:
+            keyboard.release('d')
+
+        if(imu_Data[-1][2] > 3):
+            keyboard_output.movement_press(2)
+        else:
+            keyboard.release('s')
+
+        if(imu_Data[-1][2] < -2):
+            keyboard_output.movement_press(0)
+        else:
+            keyboard.release('w')
+        
+        # inference = runModel(data)
+        # inferred_out.push_sample([inference])
+        # print(f'Inference: {inference}')
+
+        time.sleep(.01)
